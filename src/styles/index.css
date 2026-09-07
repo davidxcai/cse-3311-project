@@ -1,0 +1,46 @@
+@import 'tailwindcss';
+
+/* Design tokens. shadcn/ui + ReUI both read these CSS variables. */
+:root {
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --border: #e5e5e5;
+  --primary: #16a34a;
+  --primary-foreground: #ffffff;
+  --destructive: #dc2626;
+  --radius: 0.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #fafafa;
+    --muted: #171717;
+    --muted-foreground: #a3a3a3;
+    --border: #262626;
+    --primary: #22c55e;
+    --primary-foreground: #052e16;
+    --destructive: #ef4444;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-destructive: var(--destructive);
+  --radius-lg: var(--radius);
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}

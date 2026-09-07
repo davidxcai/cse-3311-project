@@ -1,0 +1,4 @@
+-- Static reference rows applied by `supabase start` / `supabase db reset`.
+--
+-- The bulk reference + recipe data is loaded by `npm run seed` (scripts/seed.ts)
+-- from the data/ MealDB dump, not here. Keep this file for tiny fixed rows only.
