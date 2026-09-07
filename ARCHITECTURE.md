@@ -107,8 +107,9 @@ flowchart LR
 │   │   │   ├── auth-provider.tsx
 │   │   │   ├── use-session.ts
 │   │   │   ├── protected-route.tsx
-│   │   │   ├── components/     # SignInForm, SignUpForm, GoogleButton
-│   │   │   └── routes/         # /login, /auth/callback
+│   │   │   ├── auth-context.ts  # the React context object
+│   │   │   ├── components/     # SignInForm (email/password, sign-in + sign-up)
+│   │   │   └── routes/         # /login
 │   │   ├── profile/            # dietary restrictions, disliked ingredients
 │   │   │   ├── api.ts  queries.ts  mutations.ts
 │   │   │   ├── components/     # DietTagField, DislikedIngredientsField
@@ -149,8 +150,7 @@ flowchart LR
 
 | Path | Auth | Purpose |
 | ---- | ---- | ------- |
-| `/login` | public | Email/password + Google sign-in. |
-| `/auth/callback` | public | OAuth redirect landing; exchanges code, then routes home. |
+| `/login` | public | Email/password sign-in and sign-up. |
 | `/` | protected | Dashboard: this week's plan at a glance + grocery summary. |
 | `/pantry` | protected | Add/remove on-hand ingredients. |
 | `/discover` | protected | Ranked recipe suggestions from pantry + diet. |
@@ -323,9 +323,12 @@ SPA flow with `supabase-js`:
 3. `<ProtectedRoute>` renders its outlet when `session` exists, else redirects to
    `/login?redirect=<path>`.
 4. On `SIGNED_OUT`, call `queryClient.clear()` so no cached data leaks between users.
-5. Sign-in: email + password, and Google OAuth (`supabase.auth.signInWithOAuth({
-   provider: 'google' })`). Configure the Google provider and set **Site URL** +
-   **Redirect URLs** (localhost and the deployed origin) in the Supabase dashboard.
+5. Sign-in: email + password only (`signInWithPassword` / `signUp`). No OAuth —
+   Google was descoped to avoid Google Cloud setup for a school project. Set
+   **Site URL** (localhost and the deployed origin) in the Supabase dashboard;
+   for local testing keep email confirmations off so sign-up logs the user in
+   immediately. Re-adding an OAuth provider later is a `GoogleButton` component
+   plus an `/auth/callback` route.
 
 Session stays out of TanStack Query — it's push-based, not fetch-based. Query owns
 the *data*, the provider owns the *session*.
@@ -471,7 +474,7 @@ vars; the Supabase project is provisioned separately.
 | -------- | ------ | --- |
 | Router | React Router v7 | Familiar, declarative. |
 | Tailwind | v4 | shadcn default; ReUI compatible. |
-| Auth | Email/password + Google OAuth | Both at launch. |
+| Auth | Email/password only | Google OAuth descoped — not worth the Google Cloud setup for a school project. |
 | System vs user recipes | **One `recipes` table**, `source` column + nullable `created_by` | Two tables force polymorphic foreign keys in meal-plan / saved / grocery references — harder for a mixed-experience team than one filtered table. RLS still fully separates them. |
 | Editing system recipes | Not allowed | "Duplicate to my recipes" makes a plain user copy. |
 | Meal plan shape | One plan per user, 7 rows (`day_of_week`), `is_active` toggle | No calendar dates or plan history in v1. |

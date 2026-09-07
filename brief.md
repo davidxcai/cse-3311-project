@@ -45,7 +45,8 @@ does **not** call MealDB at runtime. Seeded recipes are `source = 'system'`.
 
 ### Must have (v1 — this is the demo)
 
-- Email/password + Google OAuth sign-in.
+- Email/password sign-in. (Google OAuth was descoped — not worth the Google
+  Cloud setup for a school project.)
 - Profile settings: dietary restrictions (tag list), disliked ingredients.
 - Pantry: add / remove ingredients (typeahead over the seeded ingredient list).
 - Browse recipes (system + own), filter by category / area / diet tag.
@@ -132,7 +133,7 @@ Full DDL + RLS in `ARCHITECTURE.md`.
 
 | Weeks | Focus |
 | ----- | ----- |
-| 1–2   | Scaffold, Supabase project, schema + migrations, seed script, auth (email + Google), app shell + nav. |
+| 1–2   | Scaffold, Supabase project, schema + migrations, seed script, auth (email/password), app shell + nav. |
 | 3–4   | Profile settings, pantry CRUD, shared `IngredientPicker` + `RecipeCard`, recipe browse + detail. |
 | 5–6   | Discover: ranking function + tests, diet/dislike filtering. |
 | 7–8   | Weekly planner: day toggles, recipe assignment. |

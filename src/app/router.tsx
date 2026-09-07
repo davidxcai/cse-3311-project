@@ -2,7 +2,6 @@ import { createBrowserRouter } from 'react-router-dom'
 import { App } from '@/App'
 import { ProtectedRoute } from '@/features/auth/protected-route'
 import { LoginRoute } from '@/features/auth/routes/LoginRoute'
-import { AuthCallbackRoute } from '@/features/auth/routes/AuthCallbackRoute'
 import { DashboardRoute } from '@/features/dashboard/routes/DashboardRoute'
 import { PantryRoute } from '@/features/pantry/routes/PantryRoute'
 import { DiscoverRoute } from '@/features/discover/routes/DiscoverRoute'
@@ -18,7 +17,6 @@ import { SettingsRoute } from '@/features/profile/routes/SettingsRoute'
 /** The whole route tree. Protected routes render inside <ProtectedRoute> → <App> (AppShell + outlet). */
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginRoute /> },
-  { path: '/auth/callback', element: <AuthCallbackRoute /> },
   {
     element: <ProtectedRoute />,
     children: [

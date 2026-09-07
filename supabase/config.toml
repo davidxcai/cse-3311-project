@@ -25,18 +25,12 @@ port = 54324
 [auth]
 enabled = true
 site_url = "http://localhost:5173"
-additional_redirect_urls = ["http://localhost:5173/auth/callback"]
+additional_redirect_urls = ["http://localhost:5173"]
 jwt_expiry = 3600
 enable_signup = true
 
 [auth.email]
 enable_signup = true
+# Email/password only. For a school project, keep confirmations off so signup
+# logs the user straight in.
 enable_confirmations = false
-
-# Configure the Google provider in the Supabase dashboard for the linked project.
-# For local testing, set SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID / _SECRET and enable below.
-[auth.external.google]
-enabled = false
-client_id = ""
-secret = ""
-redirect_uri = ""
