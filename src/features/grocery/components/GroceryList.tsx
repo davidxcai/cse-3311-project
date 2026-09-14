@@ -17,7 +17,7 @@ export function GroceryList() {
   }
 
   return (
-    <ul className="space-y-2">
+    <ul className="max-h-[60vh] divide-y divide-border/60 overflow-y-auto">
       {data.map((item) => (
         <GroceryItemRow
           key={item.ingredient}

@@ -7,3 +7,10 @@ export function useMealPlanQuery() {
     queryFn: api.getMealPlan,
   })
 }
+
+export function usePlanHistoryQuery() {
+  return useQuery({
+    queryKey: ['plan-history'],
+    queryFn: api.getRecipePlanHistory,
+  })
+}

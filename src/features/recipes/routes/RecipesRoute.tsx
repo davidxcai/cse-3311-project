@@ -1,9 +1,11 @@
 import { useSearchParams } from 'react-router-dom'
 import { useRecipesQuery } from '@/features/recipes/queries'
 import { RecipeGrid } from '@/features/recipes/components/RecipeGrid'
+import { RecipeSectionNav } from '@/features/recipes/components/RecipeSectionNav'
 import { LoadingState } from '@/components/common/LoadingState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { EmptyState } from '@/components/common/EmptyState'
+import { Input } from '@/components/ui/input'
 import type { DietTag } from '@/types/models'
 
 export function RecipesRoute() {
@@ -18,9 +20,11 @@ export function RecipesRoute() {
 
   return (
     <div className="space-y-4">
+      <RecipeSectionNav />
+
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">Recipes</h1>
-        <input
+        <Input
           defaultValue={filters.search ?? ''}
           placeholder="Search by name…"
           onChange={(e) => {
@@ -29,7 +33,7 @@ export function RecipesRoute() {
             else next.delete('q')
             setParams(next, { replace: true })
           }}
-          className="h-9 w-56 rounded-lg border border-border bg-background px-3 text-sm"
+          className="w-56"
         />
       </div>
 

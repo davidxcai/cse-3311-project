@@ -1,6 +1,6 @@
-# Pantry Planner
+# Thyme Saver
 
-Pantry-first weekly meal planner. Vite + React + TypeScript SPA backed by Supabase.
+Herb and spice inventory with smart recipe recommendations. Vite + React + TypeScript SPA backed by Supabase.
 See [`brief.md`](./brief.md) for the product spec and [`ARCHITECTURE.md`](./ARCHITECTURE.md)
 for how the code is organized.
 

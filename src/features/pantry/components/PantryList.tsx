@@ -16,7 +16,7 @@ export function PantryList() {
   }
 
   return (
-    <ul className="space-y-2">
+    <ul className="divide-y divide-border/60">
       {data.map((item) => (
         <PantryItemRow
           key={item.ingredient}

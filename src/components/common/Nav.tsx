@@ -2,14 +2,8 @@ import { NavLink } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 
 const links = [
-  { to: '/', label: 'Dashboard', end: true },
-  { to: '/pantry', label: 'Pantry' },
-  { to: '/discover', label: 'Discover' },
+  { to: '/', label: 'Meal Plan', end: true },
   { to: '/recipes', label: 'Recipes' },
-  { to: '/my-recipes', label: 'My recipes' },
-  { to: '/plan', label: 'Plan' },
-  { to: '/grocery', label: 'Grocery' },
-  { to: '/settings', label: 'Settings' },
 ]
 
 export function Nav() {
@@ -22,7 +16,7 @@ export function Nav() {
           end={link.end}
           className={({ isActive }) =>
             cn(
-              'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+              'rounded-md px-4 py-2 text-sm font-medium transition-colors',
               isActive ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted',
             )
           }

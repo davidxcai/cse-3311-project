@@ -76,6 +76,14 @@ export type MealPlanEntry = {
   updated_at: string
 }
 
+/** Append-only log of every recipe assigned to a plan day. Feeds Auto Plan's
+ * "avoid recent repeats" / "haven't tried" logic — `meal_plan_entries` itself
+ * is upserted per weekday and keeps no history. */
+export type RecipePlanHistoryEntry = {
+  recipe_id: string
+  planned_date: string
+}
+
 export type GroceryItem = {
   user_id: string
   ingredient: string

@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=omzapaojmlwqfhphhdbl&read_only=true"
+    },
+    "reui": {
+      "type": "http",
+      "url": "https://mcp.reui.io"
+    }
+  }
+}

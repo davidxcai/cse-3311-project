@@ -28,3 +28,6 @@ coverage
 # supabase local stack
 supabase/.branches
 supabase/.temp
+
+# misc
+reference/

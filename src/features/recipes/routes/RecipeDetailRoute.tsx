@@ -40,27 +40,35 @@ export function RecipeDetailRoute() {
         </div>
       </div>
 
-      {r.thumb_url && (
-        <img src={r.thumb_url} alt={r.name} className="w-full max-w-md rounded-lg object-cover" />
-      )}
-
-      <section>
-        <h2 className="text-sm font-semibold">Ingredients</h2>
-        {ingredients.data && (
-          <ul className="mt-2 space-y-1 text-sm">
-            {ingredients.data.map((ing) => (
-              <li key={ing.position}>
-                <span className="text-muted-foreground">{ing.measure}</span> {ing.ingredient}
-              </li>
-            ))}
-          </ul>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,360px)_1fr] md:items-start">
+        {r.thumb_url && (
+          <img
+            src={r.thumb_url}
+            alt={r.name}
+            className="aspect-square w-full rounded-lg object-cover md:aspect-auto"
+          />
         )}
-      </section>
 
-      <section>
-        <h2 className="text-sm font-semibold">Instructions</h2>
-        <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{r.instructions}</p>
-      </section>
+        <div className="space-y-4">
+          <section>
+            <h2 className="text-sm font-semibold">Ingredients</h2>
+            {ingredients.data && (
+              <ul className="mt-2 space-y-1 text-sm">
+                {ingredients.data.map((ing) => (
+                  <li key={ing.position}>
+                    <span className="text-muted-foreground">{ing.measure}</span> {ing.ingredient}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section>
+            <h2 className="text-sm font-semibold">Instructions</h2>
+            <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{r.instructions}</p>
+          </section>
+        </div>
+      </div>
     </article>
   )
 }

@@ -45,24 +45,34 @@ export async function getRecipeIngredients(recipeId: string): Promise<RecipeIngr
   return (data ?? []) as RecipeIngredient[]
 }
 
-/** All recipes with their ingredient name lists — feeds the ranking function. */
+/** All recipes with their ingredient name lists — feeds the ranking and auto-plan functions. */
 export async function listRecipesWithIngredients(): Promise<
-  Array<Pick<Recipe, 'id' | 'name' | 'diet_tags'> & { ingredients: string[] }>
+  Array<
+    Pick<Recipe, 'id' | 'name' | 'diet_tags' | 'source' | 'area' | 'thumb_url'> & {
+      ingredients: string[]
+    }
+  >
 > {
   const { data, error } = await supabase
     .from('recipes')
-    .select('id, name, diet_tags, recipe_ingredients(ingredient)')
+    .select('id, name, diet_tags, source, area, thumb_url, recipe_ingredients(ingredient)')
   if (error) throw error
   type Row = {
     id: string
     name: string
     diet_tags: Recipe['diet_tags'] | null
+    source: Recipe['source']
+    area: Recipe['area']
+    thumb_url: Recipe['thumb_url']
     recipe_ingredients: { ingredient: string }[] | null
   }
   return ((data ?? []) as unknown as Row[]).map((row) => ({
     id: row.id,
     name: row.name,
     diet_tags: row.diet_tags ?? [],
+    source: row.source,
+    area: row.area,
+    thumb_url: row.thumb_url,
     ingredients: (row.recipe_ingredients ?? []).map((ri) => ri.ingredient),
   }))
 }

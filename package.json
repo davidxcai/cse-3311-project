@@ -1,5 +1,5 @@
 {
-  "name": "pantry-planner",
+  "name": "thyme-saver",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -15,11 +15,13 @@
     "db:types": "supabase gen types typescript --linked > src/types/database.ts"
   },
   "dependencies": {
+    "@base-ui/react": "^1.8.0",
     "@supabase/supabase-js": "^2.47.10",
     "@tanstack/react-query": "^5.62.11",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.469.0",
+    "radix-ui": "^1.6.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.1.1",

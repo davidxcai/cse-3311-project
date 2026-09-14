@@ -14,8 +14,11 @@ export function LoginRoute() {
 
   return (
     <div className="mx-auto mt-24 max-w-sm px-4">
-      <h1 className="text-lg font-semibold">🥕 Pantry Planner</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Sign in to plan your week.</p>
+      <div className="flex items-center gap-2">
+        <img src="/thyme-saver-logo.svg" alt="" className="h-6 w-auto" />
+        <span className="font-logo text-lg font-semibold text-foreground">Thyme Saver</span>
+      </div>
+      <p className="mt-1 text-sm text-muted-foreground">Sign in to manage your herbs and spices.</p>
       <div className="mt-6">
         <SignInForm onSuccess={() => navigate(redirect, { replace: true })} />
       </div>
