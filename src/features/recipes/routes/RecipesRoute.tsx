@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom'
 import { useRecipesQuery, useSavedRecipeIds } from '@/features/recipes/queries'
 import { useToggleSaveRecipe } from '@/features/recipes/mutations'
 import { useSuggestedRecipes } from '@/features/discover/use-suggested-recipes'
-import { MatchBadge } from '@/features/discover/components/MatchBadge'
 import { RecipeGrid } from '@/features/recipes/components/RecipeGrid'
 import { RecipeSectionNav } from '@/features/recipes/components/RecipeSectionNav'
 import { LoadingState } from '@/components/common/LoadingState'
@@ -54,10 +53,10 @@ export function RecipesRoute() {
             recipes={data}
             savedIds={savedIds}
             onToggleSave={(recipe) => toggleSave.mutate({ recipeId: recipe.id, saved: savedIds.has(recipe.id) })}
-            renderBadge={(recipe) => {
+            renderIngredients={(recipe) => {
               const match = matchById.get(recipe.id)
-              if (!match) return null
-              return <MatchBadge have={match.haveCount} total={match.haveCount + match.missingCount} />
+              if (!match) return undefined
+              return { have: match.haveCount, total: match.haveCount + match.missingCount }
             }}
           />
         )}
