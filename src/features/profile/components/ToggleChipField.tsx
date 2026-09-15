@@ -1,19 +1,20 @@
-import { DIET_TAGS, type DietTag } from '@/types/models'
-
-export function DietTagField({
+/** Generic fixed-option toggle-chip picker. Backs both dietary restrictions and allergies. */
+export function ToggleChipField<T extends string>({
+  options,
   value,
   onChange,
 }: {
-  value: DietTag[]
-  onChange: (next: DietTag[]) => void
+  options: readonly T[]
+  value: T[]
+  onChange: (next: T[]) => void
 }) {
-  function toggle(tag: DietTag) {
+  function toggle(tag: T) {
     onChange(value.includes(tag) ? value.filter((t) => t !== tag) : [...value, tag])
   }
 
   return (
     <div className="flex flex-wrap gap-2">
-      {DIET_TAGS.map((tag) => (
+      {options.map((tag) => (
         <button
           key={tag}
           type="button"

@@ -34,13 +34,13 @@ export function GroceryPantryPanel() {
           <TabsContent value="groceries" className="space-y-4">
             <GroceryList />
           </TabsContent>
-          <TabsContent value="pantry" className="space-y-4">
+          <TabsContent value="pantry" className="flex max-h-[60vh] flex-col gap-4">
             <IngredientPicker
               exclude={(pantry.data ?? []).map((i) => i.ingredient)}
               onSelect={(name) => addPantryItem.mutate(name)}
               placeholder="Add an ingredient…"
             />
-            <PantryList />
+            <PantryList className="max-h-none flex-1" />
           </TabsContent>
         </CardContent>
       </Tabs>

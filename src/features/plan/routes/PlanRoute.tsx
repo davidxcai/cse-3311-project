@@ -11,17 +11,17 @@ export function PlanRoute() {
   const hasPlan = (data ?? []).some((e) => e.is_active)
 
   return (
-    <div className="space-y-6">
+    <div className="flex h-full min-h-0 flex-col gap-6">
       {autoPlanOpen && (
         <button
           type="button"
           onClick={() => setAutoPlanOpen(false)}
-          className="text-xs text-muted-foreground hover:text-foreground hover:underline"
+          className="shrink-0 text-xs text-muted-foreground hover:text-foreground hover:underline"
         >
           ← Back
         </button>
       )}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold">Meal Plan</h1>
         {!autoPlanOpen && hasPlan && (
           <Button onClick={() => setAutoPlanOpen(true)}>Plan Recipes</Button>

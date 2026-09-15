@@ -17,20 +17,19 @@ export function MealsColumn({ onPlanRecipes }: { onPlanRecipes: () => void }) {
   if (isLoading) return <LoadingState />
   if (isError) return <ErrorState error={error} onRetry={() => refetch()} />
 
-  const byDay = new Map((data ?? []).map((e) => [e.day_of_week, e]))
-  const activeDays = Array.from({ length: 7 }, (_, day) => day).filter(
-    (day) => byDay.get(day)?.is_active,
-  )
+  const activeEntries = (data ?? [])
+    .filter((e) => e.is_active)
+    .sort((a, b) => a.plan_date.localeCompare(b.plan_date))
 
-  return activeDays.length === 0 ? (
+  return activeEntries.length === 0 ? (
     <EmptyState
       title="No Meal Plan"
       action={<Button onClick={onPlanRecipes}>Plan Recipes</Button>}
     />
   ) : (
     <div className="flex flex-wrap gap-x-6 gap-y-4">
-      {activeDays.map((day) => (
-        <MealCard key={day} day={day} entry={byDay.get(day)!} />
+      {activeEntries.map((entry) => (
+        <MealCard key={entry.plan_date} entry={entry} />
       ))}
     </div>
   )

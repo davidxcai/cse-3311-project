@@ -4,8 +4,9 @@ import { PantryItemRow } from './PantryItemRow'
 import { LoadingState } from '@/components/common/LoadingState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { EmptyState } from '@/components/common/EmptyState'
+import { cn } from '@/lib/utils'
 
-export function PantryList() {
+export function PantryList({ className }: { className?: string }) {
   const { data, isLoading, isError, error, refetch } = usePantryQuery()
   const remove = useRemovePantryItem()
 
@@ -16,7 +17,7 @@ export function PantryList() {
   }
 
   return (
-    <ul className="divide-y divide-border/60">
+    <ul className={cn('max-h-[60vh] divide-y divide-border/60 overflow-y-auto', className)}>
       {data.map((item) => (
         <PantryItemRow
           key={item.ingredient}

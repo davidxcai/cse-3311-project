@@ -4,31 +4,32 @@ import type { MealPlanEntry, RecipePlanHistoryEntry } from '@/types/models'
 export async function getMealPlan(): Promise<MealPlanEntry[]> {
   const { data, error } = await supabase
     .from('meal_plan_entries')
-    .select('user_id, day_of_week, is_active, recipe_id, updated_at')
-    .order('day_of_week')
+    .select('user_id, plan_date, is_active, recipe_id, updated_at')
+    .order('plan_date')
   if (error) throw error
   return (data ?? []) as MealPlanEntry[]
 }
 
 /**
- * Upsert one weekday row. `meal_plan_entries` PK is (user_id, day_of_week), so
- * it only ever reflects the *current* assignment. Every time a recipe is
- * assigned, also append to `recipe_plan_history` — that's the only durable
- * record Auto Plan can use to avoid recent repeats or spot never-tried recipes.
+ * Upsert one date's row. `meal_plan_entries` PK is (user_id, plan_date), so
+ * it only ever reflects the *current* assignment for that date. Every time a
+ * recipe is assigned, also append to `recipe_plan_history` — that's the only
+ * durable record Auto Plan can use to avoid recent repeats or spot
+ * never-tried recipes.
  */
-export async function upsertDay(
-  entry: { day_of_week: number; is_active?: boolean; recipe_id?: string | null },
+export async function upsertPlanDate(
+  entry: { plan_date: string; is_active?: boolean; recipe_id?: string | null },
   userId: string,
 ): Promise<void> {
   const { error } = await supabase.from('meal_plan_entries').upsert(
     {
       user_id: userId,
-      day_of_week: entry.day_of_week,
+      plan_date: entry.plan_date,
       ...(entry.is_active !== undefined ? { is_active: entry.is_active } : {}),
       ...(entry.recipe_id !== undefined ? { recipe_id: entry.recipe_id } : {}),
       updated_at: new Date().toISOString(),
     },
-    { onConflict: 'user_id,day_of_week' },
+    { onConflict: 'user_id,plan_date' },
   )
   if (error) throw error
 
@@ -42,31 +43,31 @@ export async function upsertDay(
 
 /**
  * Commit a whole Auto Plan draft in one batched write. `picks` maps
- * day_of_week -> recipe_id for every currently-selected day; any day in
- * `previousActiveDays` that isn't in `picks` gets deactivated, so Save fully
+ * plan_date -> recipe_id for every currently-selected date; any date in
+ * `previousActiveDates` that isn't in `picks` gets deactivated, so Save fully
  * reconciles the drafted selection instead of only adding to it.
  */
 export async function applyPlan(
-  picks: Record<number, string>,
-  previousActiveDays: number[],
+  picks: Record<string, string>,
+  previousActiveDates: string[],
   userId: string,
 ): Promise<void> {
-  const days = Object.keys(picks).map(Number)
-  const daySet = new Set(days)
-  const toDeactivate = previousActiveDays.filter((day) => !daySet.has(day))
+  const dates = Object.keys(picks)
+  const dateSet = new Set(dates)
+  const toDeactivate = previousActiveDates.filter((date) => !dateSet.has(date))
   const now = new Date().toISOString()
 
   const rows = [
-    ...days.map((day) => ({
+    ...dates.map((date) => ({
       user_id: userId,
-      day_of_week: day,
+      plan_date: date,
       is_active: true,
-      recipe_id: picks[day],
+      recipe_id: picks[date],
       updated_at: now,
     })),
-    ...toDeactivate.map((day) => ({
+    ...toDeactivate.map((date) => ({
       user_id: userId,
-      day_of_week: day,
+      plan_date: date,
       is_active: false,
       updated_at: now,
     })),
@@ -75,14 +76,14 @@ export async function applyPlan(
   if (rows.length > 0) {
     const { error } = await supabase
       .from('meal_plan_entries')
-      .upsert(rows, { onConflict: 'user_id,day_of_week' })
+      .upsert(rows, { onConflict: 'user_id,plan_date' })
     if (error) throw error
   }
 
-  if (days.length > 0) {
+  if (dates.length > 0) {
     const { error: historyError } = await supabase
       .from('recipe_plan_history')
-      .insert(days.map((day) => ({ user_id: userId, recipe_id: picks[day] })))
+      .insert(dates.map((date) => ({ user_id: userId, recipe_id: picks[date] })))
     if (historyError) throw historyError
   }
 }

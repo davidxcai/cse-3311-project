@@ -26,6 +26,33 @@ export const DIET_TAGS: DietTag[] = [
   'low_carb',
 ]
 
+/** Curated quick-add suggestions for the disliked-ingredients field — names that exist in `ingredients`. */
+export const COMMON_DISLIKED_INGREDIENTS = [
+  'Beets',
+  'Brussels Sprouts',
+  'Cilantro',
+  'Coconut',
+  'Mayonnaise',
+  'Mushrooms',
+  'Tofu',
+  'Turnips',
+]
+
+export const ALLERGY_TYPES = [
+  'Shellfish',
+  'Fish',
+  'Gluten',
+  'Dairy',
+  'Peanuts',
+  'Tree Nuts',
+  'Soy',
+  'Eggs',
+  'Sesame',
+  'Mustard',
+  'Sulfites',
+  'Nightshades',
+]
+
 export type Ingredient = {
   name: string
   description: string | null
@@ -63,6 +90,7 @@ export type Profile = {
   display_name: string | null
   dietary_restrictions: DietTag[]
   disliked_ingredients: string[]
+  allergies: string[]
   created_at: string
 }
 
@@ -70,7 +98,8 @@ export type PantryItem = { user_id: string; ingredient: string; created_at: stri
 
 export type MealPlanEntry = {
   user_id: string
-  day_of_week: number
+  /** ISO date (YYYY-MM-DD) this entry is planned for */
+  plan_date: string
   is_active: boolean
   recipe_id: string | null
   updated_at: string
@@ -90,6 +119,12 @@ export type GroceryItem = {
   checked: boolean
   is_manual: boolean
   created_at: string
+}
+
+/** Parse a `YYYY-MM-DD` string as a local-midnight Date (avoids the UTC-parsing day-shift of `new Date(iso)`). */
+export function parseDateOnly(iso: string): Date {
+  const [year, month, day] = iso.split('-').map(Number)
+  return new Date(year, month - 1, day)
 }
 
 export const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const

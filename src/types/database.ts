@@ -93,21 +93,21 @@ export type Database = {
       }
       meal_plan_entries: {
         Row: {
-          day_of_week: number
+          plan_date: string
           is_active: boolean
           recipe_id: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
-          day_of_week: number
+          plan_date: string
           is_active?: boolean
           recipe_id?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
-          day_of_week?: number
+          plan_date?: string
           is_active?: boolean
           recipe_id?: string | null
           updated_at?: string
@@ -151,6 +151,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          allergies: string[]
           created_at: string
           dietary_restrictions: Database["public"]["Enums"]["diet_tag"][]
           disliked_ingredients: string[]
@@ -158,6 +159,7 @@ export type Database = {
           id: string
         }
         Insert: {
+          allergies?: string[]
           created_at?: string
           dietary_restrictions?: Database["public"]["Enums"]["diet_tag"][]
           disliked_ingredients?: string[]
@@ -165,6 +167,7 @@ export type Database = {
           id: string
         }
         Update: {
+          allergies?: string[]
           created_at?: string
           dietary_restrictions?: Database["public"]["Enums"]["diet_tag"][]
           disliked_ingredients?: string[]

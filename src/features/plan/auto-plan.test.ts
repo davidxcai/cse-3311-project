@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildAutoPlanCandidates, pickRandom, type AutoPlanRecipeInput } from './auto-plan'
+import { buildAutoPlanCandidates, pickFromRank, type AutoPlanRecipeInput } from './auto-plan'
 
 const recipe = (over: Partial<AutoPlanRecipeInput> & { id: string }): AutoPlanRecipeInput => ({
   name: over.id,
@@ -57,20 +57,18 @@ describe('buildAutoPlanCandidates', () => {
     expect(candidates.map((c) => c.id)).toEqual(['ok'])
   })
 
-  it('sorts never-planned first, then least-recently-planned, then coverage desc', () => {
+  it('ranks having any pantry overlap above having none, even with a lower missing count', () => {
     const { candidates } = buildAutoPlanCandidates({
       recipes: [
-        recipe({ id: 'planned-recent', ingredients: ['Egg'] }),
-        recipe({ id: 'planned-old', ingredients: ['Egg'] }),
-        recipe({ id: 'never', ingredients: ['Egg'] }),
+        // 0/2 have — a short grocery list, but shares nothing with the pantry.
+        recipe({ id: 'zero-overlap', ingredients: ['Squid Ink', 'Saffron'] }),
+        // 1/4 have — a longer list, but at least one ingredient is already owned.
+        recipe({ id: 'some-overlap', ingredients: ['Egg', 'Squid Ink', 'Saffron', 'Truffle'] }),
       ],
       pantry: ['egg'],
       restrictions: [],
       disliked: [],
-      history: {
-        'planned-recent': '2026-09-10',
-        'planned-old': '2026-08-01',
-      },
+      history: {},
       scope: ALL_SCOPE,
       cuisines: [],
       newOnly: false,
@@ -78,7 +76,93 @@ describe('buildAutoPlanCandidates', () => {
       today: '2026-09-13',
     })
 
-    expect(candidates.map((c) => c.id)).toEqual(['never', 'planned-old', 'planned-recent'])
+    expect(candidates.map((c) => c.id)).toEqual(['some-overlap', 'zero-overlap'])
+  })
+
+  it('within an availability tier, ranks by haveCount desc even when missingCount is higher', () => {
+    const { candidates } = buildAutoPlanCandidates({
+      recipes: [
+        // 12/14 have, missing 2 — a bigger recipe, but uses up far more of the pantry.
+        recipe({ id: 'big-recipe', ingredients: Array.from({ length: 14 }, (_, i) => `ing-${i}`) }),
+        // 2/3 have, missing 1 — fewer things to buy, but uses much less of the pantry.
+        recipe({ id: 'small-recipe', ingredients: ['ing-0', 'ing-1', 'ing-2'] }),
+      ],
+      pantry: Array.from({ length: 12 }, (_, i) => `ing-${i}`),
+      restrictions: [],
+      disliked: [],
+      history: {},
+      scope: ALL_SCOPE,
+      cuisines: [],
+      newOnly: false,
+      minCount: 0,
+      today: '2026-09-13',
+    })
+
+    expect(candidates.map((c) => c.id)).toEqual(['big-recipe', 'small-recipe'])
+  })
+
+  it('breaks a haveCount tie by missingCount asc (smaller trip wins)', () => {
+    const { candidates } = buildAutoPlanCandidates({
+      recipes: [
+        // 3 have, 1 missing.
+        recipe({ id: 'small-trip', ingredients: ['a', 'b', 'c', 'x'] }),
+        // 3 have, 5 missing — same pantry use, bigger trip.
+        recipe({ id: 'big-trip', ingredients: ['a', 'b', 'c', 'v', 'w', 'x', 'y', 'z'] }),
+      ],
+      pantry: ['a', 'b', 'c'],
+      restrictions: [],
+      disliked: [],
+      history: {},
+      scope: ALL_SCOPE,
+      cuisines: [],
+      newOnly: false,
+      minCount: 0,
+      today: '2026-09-13',
+    })
+
+    expect(candidates.map((c) => c.id)).toEqual(['small-trip', 'big-trip'])
+  })
+
+  it('ignores recency entirely', () => {
+    const { candidates } = buildAutoPlanCandidates({
+      recipes: [
+        // Planned today, but missing nothing.
+        recipe({ id: 'recent-good-match', ingredients: ['Egg'] }),
+        // Never planned, but missing 2 ingredients — should still rank last.
+        recipe({ id: 'never-bad-match', ingredients: ['Egg', 'Flour', 'Sugar'] }),
+      ],
+      pantry: ['egg'],
+      restrictions: [],
+      disliked: [],
+      history: { 'recent-good-match': '2026-09-13' },
+      scope: ALL_SCOPE,
+      cuisines: [],
+      newOnly: false,
+      minCount: 0,
+      today: '2026-09-13',
+    })
+
+    expect(candidates.map((c) => c.id)).toEqual(['recent-good-match', 'never-bad-match'])
+  })
+
+  it('breaks a full tie alphabetically by name', () => {
+    const { candidates } = buildAutoPlanCandidates({
+      recipes: [
+        recipe({ id: 'z', name: 'Zucchini Bread', ingredients: ['Egg'] }),
+        recipe({ id: 'a', name: 'Apple Pie', ingredients: ['Egg'] }),
+      ],
+      pantry: ['egg'],
+      restrictions: [],
+      disliked: [],
+      history: {},
+      scope: ALL_SCOPE,
+      cuisines: [],
+      newOnly: false,
+      minCount: 0,
+      today: '2026-09-13',
+    })
+
+    expect(candidates.map((c) => c.id)).toEqual(['a', 'z'])
   })
 
   it('restricts to never-planned recipes when newOnly has enough candidates', () => {
@@ -117,14 +201,21 @@ describe('buildAutoPlanCandidates', () => {
     expect(relaxedNewOnly).toBe(true)
   })
 
-  it('keeps only recipes whose area is in cuisines, excluding recipes with no area', () => {
+  it('treats cuisines as a ranking preference, not a filter: availability still comes first', () => {
     const { candidates } = buildAutoPlanCandidates({
       recipes: [
-        recipe({ id: 'mexican', area: 'Mexican' }),
-        recipe({ id: 'italian', area: 'Italian' }),
-        recipe({ id: 'no-area', area: null }),
+        // Matches the cuisine, but only 1 of 2 ingredients on hand.
+        recipe({ id: 'mex-avail', area: 'Mexican', ingredients: ['a', 'x'] }),
+        // Doesn't match the cuisine, but has everything on hand.
+        recipe({ id: 'other-avail', area: 'Italian', ingredients: ['a', 'b', 'c', 'd', 'e'] }),
+        // No area at all — never matches a cuisine preference, still available.
+        recipe({ id: 'no-area-avail', area: null, ingredients: ['a', 'b', 'c'] }),
+        // Matches the cuisine, but shares nothing with the pantry.
+        recipe({ id: 'mex-unavail', area: 'Mexican', ingredients: ['z'] }),
+        // Matches neither the cuisine nor the pantry.
+        recipe({ id: 'other-unavail', area: 'Italian', ingredients: ['z', 'y'] }),
       ],
-      pantry: [],
+      pantry: ['a', 'b', 'c', 'd', 'e'],
       restrictions: [],
       disliked: [],
       history: {},
@@ -135,7 +226,15 @@ describe('buildAutoPlanCandidates', () => {
       today: '2026-09-13',
     })
 
-    expect(candidates.map((c) => c.id)).toEqual(['mexican'])
+    // [available & cuisine] > [available & !cuisine] > [!available & cuisine] > [!available & !cuisine].
+    // Nothing is dropped — mex-unavail and other-unavail still show up, just last.
+    expect(candidates.map((c) => c.id)).toEqual([
+      'mex-avail',
+      'other-avail',
+      'no-area-avail',
+      'mex-unavail',
+      'other-unavail',
+    ])
   })
 
   it('passes a recipe area through onto the candidate', () => {
@@ -155,46 +254,52 @@ describe('buildAutoPlanCandidates', () => {
     expect(candidates[0].area).toBe('Chinese')
   })
 
-  it('relaxes newOnly against the cuisine-filtered count, not the full pool', () => {
+  it('checks newOnly against the whole pool, unaffected by the cuisine preference', () => {
     const { candidates, relaxedNewOnly } = buildAutoPlanCandidates({
       recipes: [
-        recipe({ id: 'mexican-never', area: 'Mexican' }),
-        recipe({ id: 'mexican-planned', area: 'Mexican' }),
-        recipe({ id: 'italian-never', area: 'Italian' }),
+        // Doesn't match the cuisine preference, but is the only never-planned recipe.
+        recipe({ id: 'never-italian', area: 'Italian' }),
+        recipe({ id: 'planned-mexican', area: 'Mexican' }),
       ],
       pantry: [],
       restrictions: [],
       disliked: [],
-      history: { 'mexican-planned': '2026-09-01' },
+      history: { 'planned-mexican': '2026-09-01' },
       scope: ALL_SCOPE,
       cuisines: ['Mexican'],
       newOnly: true,
-      minCount: 2,
+      minCount: 1,
       today: '2026-09-13',
     })
 
-    // Only one never-planned Mexican recipe qualifies, below minCount of 2,
-    // so newOnly relaxes — and the never-planned Italian recipe stays excluded
-    // by the cuisine filter even during relaxation.
-    expect(candidates.map((c) => c.id)).toEqual(['mexican-never', 'mexican-planned'])
-    expect(relaxedNewOnly).toBe(true)
+    // One never-planned recipe meets minCount 1, so newOnly is NOT relaxed —
+    // even though that recipe doesn't match the cuisine preference. Cuisine
+    // never gates which recipes count toward minCount; it only ranks them.
+    expect(candidates.map((c) => c.id)).toEqual(['never-italian'])
+    expect(relaxedNewOnly).toBe(false)
   })
 })
 
-describe('pickRandom', () => {
-  it('returns count items drawn from the pool', () => {
-    const picks = pickRandom(['a', 'b', 'c'], 2, () => 0)
-    expect(picks).toHaveLength(2)
-    picks.forEach((p) => expect(['a', 'b', 'c']).toContain(p))
+describe('pickFromRank', () => {
+  it('reads count items starting at the cursor, in rank order', () => {
+    expect(pickFromRank(['a', 'b', 'c', 'd'], 2, 0)).toEqual(['a', 'b'])
+    expect(pickFromRank(['a', 'b', 'c', 'd'], 2, 2)).toEqual(['c', 'd'])
   })
 
-  it('cycles through the pool when count exceeds its size', () => {
-    const picks = pickRandom(['a', 'b'], 5, () => 0)
-    expect(picks).toHaveLength(5)
-    picks.forEach((p) => expect(['a', 'b']).toContain(p))
+  it('never revisits a better-ranked item once the cursor has moved past it', () => {
+    // A batch of 3, then "re-roll all" (cursor advances by the batch size):
+    // the next batch picks up exactly where the last one left off.
+    const pool = ['1', '2', '3', '4', '5', '6', '7']
+    expect(pickFromRank(pool, 3, 0)).toEqual(['1', '2', '3'])
+    expect(pickFromRank(pool, 3, 3)).toEqual(['4', '5', '6'])
+  })
+
+  it('wraps around when the cursor runs past the end of the pool', () => {
+    expect(pickFromRank(['a', 'b'], 1, 5)).toEqual(['b'])
+    expect(pickFromRank(['a', 'b', 'c'], 4, 0)).toEqual(['a', 'b', 'c', 'a'])
   })
 
   it('returns an empty array for an empty pool', () => {
-    expect(pickRandom([], 3)).toEqual([])
+    expect(pickFromRank([], 3, 0)).toEqual([])
   })
 })

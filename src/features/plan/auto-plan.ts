@@ -36,7 +36,7 @@ export type AutoPlanInput = {
   /** recipe id -> most recent planned_date (YYYY-MM-DD) it was assigned to a plan day */
   history: Record<string, string>
   scope: CollectionScope
-  /** restrict to recipes whose `area` is in this list; empty = no restriction */
+  /** prefer recipes whose `area` is in this list (soft tiebreak, not a filter); empty = no preference */
   cuisines: string[]
   /** restrict to recipes absent from `history`, when enough of them qualify */
   newOnly: boolean
@@ -51,6 +51,10 @@ export type AutoPlanCandidate = {
   name: string
   area: string | null
   thumb_url: string | null
+  /** distinct ingredients the user's pantry covers */
+  haveCount: number
+  /** total distinct ingredients the recipe calls for */
+  total: number
   /** haveCount / total distinct ingredients (0 when the recipe lists none) */
   coverage: number
   missingCount: number
@@ -81,13 +85,37 @@ function daysBetween(today: string, date: string): number {
   return Math.round(ms / 86_400_000)
 }
 
-function sortByRecencyThenCoverage(list: AutoPlanCandidate[]): AutoPlanCandidate[] {
-  return [...list].sort(
-    (a, b) =>
-      b.daysSincePlanned - a.daysSincePlanned ||
-      b.coverage - a.coverage ||
-      a.name.localeCompare(b.name),
-  )
+function matchesCuisine(candidate: AutoPlanCandidate, cuisines: string[]): boolean {
+  return cuisines.length === 0 || (candidate.area != null && cuisines.includes(candidate.area))
+}
+
+/**
+ * Ranks best grocery-trip match first, deterministically — no randomness.
+ *
+ * Two coarse tiers come first, each splitting the pool in two:
+ * 1. Having *any* pantry ingredient beats having none, regardless of how
+ *    short the shopping list for a zero-overlap recipe would be — "I own
+ *    something for this" matters more than raw missing-ingredient count.
+ * 2. Matching a requested cuisine beats not matching one — but only within
+ *    an availability tier, so a cuisine match with zero ingredients still
+ *    ranks below a non-matching recipe you can actually make headway on.
+ *
+ * Within each of the resulting four groups, rank by haveCount desc (uses up
+ * the most pantry first), then missingCount asc (smaller trip breaks ties),
+ * then name asc.
+ */
+function sortAutoPlan(list: AutoPlanCandidate[], cuisines: string[]): AutoPlanCandidate[] {
+  return [...list].sort((a, b) => {
+    const aHas = a.haveCount > 0
+    const bHas = b.haveCount > 0
+    if (aHas !== bHas) return aHas ? -1 : 1
+
+    const aCuisine = matchesCuisine(a, cuisines)
+    const bCuisine = matchesCuisine(b, cuisines)
+    if (aCuisine !== bCuisine) return aCuisine ? -1 : 1
+
+    return b.haveCount - a.haveCount || a.missingCount - b.missingCount || a.name.localeCompare(b.name)
+  })
 }
 
 /**
@@ -95,14 +123,16 @@ function sortByRecencyThenCoverage(list: AutoPlanCandidate[]): AutoPlanCandidate
  *
  * 1. Keep recipes in the requested `scope` (system / mine / saved — OR'd).
  * 2. Exclude a recipe if it contains a disliked ingredient, or if any required
- *    restriction is missing from its diet_tags (same rule as discover/rank.ts).
- * 3. Exclude a recipe if `cuisines` is non-empty and its `area` isn't in it.
- * 4. Compute pantry coverage the same way discover does.
- * 5. Sort by recency desc (never-planned first), then coverage desc, then name
- *    asc — "avoid recent repeats" is a soft ranking signal, not a hard cutoff,
- *    so the pool never runs dry: worst case it resurfaces the
- *    least-recently-cooked recipe instead of blocking the week.
- * 6. If `newOnly` is set, restrict to never-planned recipes — but only when
+ *    restriction is missing from its diet_tags (same rule as discover/rank.ts)
+ *    — a recipe with no tags at all is excluded the same as one that's tagged
+ *    against the restriction; an unlabeled recipe never gets the benefit of
+ *    the doubt.
+ * 3. Compute pantry coverage the same way discover does.
+ * 4. Sort — see `sortAutoPlan` — by pantry availability, then cuisine match,
+ *    then haveCount, then missingCount, then name. `cuisines` is a ranking
+ *    preference here, not a filter: a non-matching recipe never gets dropped,
+ *    only outranked.
+ * 5. If `newOnly` is set, restrict to never-planned recipes — but only when
  *    that leaves at least `minCount` candidates; otherwise ignore the toggle
  *    rather than fail to fill the week.
  */
@@ -118,8 +148,6 @@ export function buildAutoPlanCandidates(input: AutoPlanInput): AutoPlanResult {
 
     const dietTags = new Set(recipe.diet_tags.map(canon))
     if (restrictions.some((tag) => !dietTags.has(tag))) continue
-
-    if (input.cuisines.length > 0 && (!recipe.area || !input.cuisines.includes(recipe.area))) continue
 
     const distinct = new Map<string, string>()
     for (const raw of recipe.ingredients) {
@@ -143,6 +171,8 @@ export function buildAutoPlanCandidates(input: AutoPlanInput): AutoPlanResult {
       name: recipe.name,
       area: recipe.area,
       thumb_url: recipe.thumb_url,
+      haveCount,
+      total,
       coverage: total === 0 ? 0 : haveCount / total,
       missingCount: total - haveCount,
       daysSincePlanned,
@@ -152,24 +182,22 @@ export function buildAutoPlanCandidates(input: AutoPlanInput): AutoPlanResult {
   if (input.newOnly) {
     const neverPlanned = scored.filter((c) => c.daysSincePlanned === Infinity)
     if (neverPlanned.length >= input.minCount) {
-      return { candidates: sortByRecencyThenCoverage(neverPlanned), relaxedNewOnly: false }
+      return { candidates: sortAutoPlan(neverPlanned, input.cuisines), relaxedNewOnly: false }
     }
   }
 
-  return { candidates: sortByRecencyThenCoverage(scored), relaxedNewOnly: input.newOnly }
+  return { candidates: sortAutoPlan(scored, input.cuisines), relaxedNewOnly: input.newOnly }
 }
 
 /**
- * Pick `count` items at random from `pool` (Fisher-Yates shuffle). Cycles
- * through the shuffled pool if `count` exceeds its size, so Auto Plan can
- * always fill every day even with a small recipe library.
+ * Reads `count` items starting at rank `cursor` in `pool` (already ranked
+ * best-first), wrapping around if `cursor + count` runs past the end. No
+ * randomness: the first call (`cursor = 0`) is always the best-ranked items,
+ * and advancing the cursor only ever moves further down the ranking — so
+ * "re-roll" swaps in the next-best option instead of a random one, and never
+ * re-shows something already-seen ranked higher.
  */
-export function pickRandom<T>(pool: T[], count: number, rng: () => number = Math.random): T[] {
+export function pickFromRank<T>(pool: T[], count: number, cursor: number): T[] {
   if (pool.length === 0 || count <= 0) return []
-  const shuffled = [...pool]
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1))
-    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
-  }
-  return Array.from({ length: count }, (_, i) => shuffled[i % shuffled.length])
+  return Array.from({ length: count }, (_, i) => pool[(cursor + i) % pool.length])
 }

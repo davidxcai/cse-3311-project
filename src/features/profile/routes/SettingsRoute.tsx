@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { useProfileQuery } from '@/features/profile/queries'
 import { useUpdateProfile } from '@/features/profile/mutations'
 import { useSignOut } from '@/features/auth/use-session'
-import { DietTagField } from '@/features/profile/components/DietTagField'
-import { DislikedIngredientsField } from '@/features/profile/components/DislikedIngredientsField'
+import { ToggleChipField } from '@/features/profile/components/ToggleChipField'
+import { IngredientTagListField } from '@/features/profile/components/IngredientTagListField'
 import { LoadingState } from '@/components/common/LoadingState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
-import type { DietTag } from '@/types/models'
+import { ALLERGY_TYPES, COMMON_DISLIKED_INGREDIENTS, DIET_TAGS, type DietTag } from '@/types/models'
 
 const SECTIONS = ['account', 'eating-preferences'] as const
 type Section = (typeof SECTIONS)[number]
@@ -31,12 +31,14 @@ export function SettingsRoute() {
   const [displayName, setDisplayName] = useState('')
   const [restrictions, setRestrictions] = useState<DietTag[]>([])
   const [disliked, setDisliked] = useState<string[]>([])
+  const [allergies, setAllergies] = useState<string[]>([])
 
   useEffect(() => {
     if (!data) return
     setDisplayName(data.display_name ?? '')
     setRestrictions(data.dietary_restrictions)
     setDisliked(data.disliked_ingredients)
+    setAllergies(data.allergies)
   }, [data])
 
   return (
@@ -95,6 +97,7 @@ export function SettingsRoute() {
                     display_name: displayName || null,
                     dietary_restrictions: restrictions,
                     disliked_ingredients: disliked,
+                    allergies,
                   })
                 }}
                 className="space-y-6"
@@ -114,12 +117,22 @@ export function SettingsRoute() {
                   <>
                     <div className="space-y-2">
                       <p className="text-sm font-medium">Dietary restrictions</p>
-                      <DietTagField value={restrictions} onChange={setRestrictions} />
+                      <ToggleChipField options={DIET_TAGS} value={restrictions} onChange={setRestrictions} />
+                    </div>
+
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Allergies</p>
+                      <ToggleChipField options={ALLERGY_TYPES} value={allergies} onChange={setAllergies} />
                     </div>
 
                     <div className="space-y-2">
                       <p className="text-sm font-medium">Disliked ingredients</p>
-                      <DislikedIngredientsField value={disliked} onChange={setDisliked} />
+                      <IngredientTagListField
+                        value={disliked}
+                        onChange={setDisliked}
+                        placeholder="Add a disliked ingredient…"
+                        suggestions={COMMON_DISLIKED_INGREDIENTS}
+                      />
                     </div>
                   </>
                 )}

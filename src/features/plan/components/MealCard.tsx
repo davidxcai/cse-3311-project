@@ -2,20 +2,21 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { RefreshCw, X } from 'lucide-react'
 import { useRecipeQuery } from '@/features/recipes/queries'
-import { useUpsertPlanDay } from '@/features/plan/mutations'
+import { useUpsertPlanDate } from '@/features/plan/mutations'
 import { RecipePickerDialog } from './RecipePickerDialog'
 import type { MealPlanEntry } from '@/types/models'
-import { DAY_LABELS_FULL } from '@/types/models'
+import { DAY_LABELS_FULL, parseDateOnly } from '@/types/models'
 
 /**
- * One assigned-day row in the Meals column. The thumbnail links straight to
+ * One assigned-date row in the Meals column. The thumbnail links straight to
  * the recipe; Swap and Remove are hover-only overlay buttons so the row
  * stays down to a name + a big photo instead of a row of buttons.
  */
-export function MealCard({ day, entry }: { day: number; entry: MealPlanEntry }) {
+export function MealCard({ entry }: { entry: MealPlanEntry }) {
   const [picking, setPicking] = useState(false)
-  const upsert = useUpsertPlanDay()
+  const upsert = useUpsertPlanDate()
   const recipe = useRecipeQuery(entry.recipe_id ?? undefined)
+  const date = parseDateOnly(entry.plan_date)
 
   return (
     <>
@@ -56,7 +57,7 @@ export function MealCard({ day, entry }: { day: number; entry: MealPlanEntry }) 
               </button>
               <button
                 type="button"
-                onClick={() => upsert.mutate({ day_of_week: day, is_active: false })}
+                onClick={() => upsert.mutate({ plan_date: entry.plan_date, is_active: false })}
                 aria-label={`Remove ${recipe.data.name}`}
                 className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-sm hover:border-destructive hover:text-destructive"
               >
@@ -67,7 +68,7 @@ export function MealCard({ day, entry }: { day: number; entry: MealPlanEntry }) 
         </div>
         <div className="min-w-0 flex-1 pt-1">
           <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-            {DAY_LABELS_FULL[day]}
+            {DAY_LABELS_FULL[date.getDay()]} · {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
           </p>
           {recipe.data ? (
             <Link to={`/recipes/${recipe.data.id}`} className="line-clamp-3 text-sm font-medium hover:underline">
@@ -89,7 +90,7 @@ export function MealCard({ day, entry }: { day: number; entry: MealPlanEntry }) 
         open={picking}
         onClose={() => setPicking(false)}
         onPick={(recipeId) => {
-          upsert.mutate({ day_of_week: day, recipe_id: recipeId })
+          upsert.mutate({ plan_date: entry.plan_date, recipe_id: recipeId })
           setPicking(false)
         }}
       />
