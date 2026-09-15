@@ -40,6 +40,53 @@ export async function upsertDay(
   }
 }
 
+/**
+ * Commit a whole Auto Plan draft in one batched write. `picks` maps
+ * day_of_week -> recipe_id for every currently-selected day; any day in
+ * `previousActiveDays` that isn't in `picks` gets deactivated, so Save fully
+ * reconciles the drafted selection instead of only adding to it.
+ */
+export async function applyPlan(
+  picks: Record<number, string>,
+  previousActiveDays: number[],
+  userId: string,
+): Promise<void> {
+  const days = Object.keys(picks).map(Number)
+  const daySet = new Set(days)
+  const toDeactivate = previousActiveDays.filter((day) => !daySet.has(day))
+  const now = new Date().toISOString()
+
+  const rows = [
+    ...days.map((day) => ({
+      user_id: userId,
+      day_of_week: day,
+      is_active: true,
+      recipe_id: picks[day],
+      updated_at: now,
+    })),
+    ...toDeactivate.map((day) => ({
+      user_id: userId,
+      day_of_week: day,
+      is_active: false,
+      updated_at: now,
+    })),
+  ]
+
+  if (rows.length > 0) {
+    const { error } = await supabase
+      .from('meal_plan_entries')
+      .upsert(rows, { onConflict: 'user_id,day_of_week' })
+    if (error) throw error
+  }
+
+  if (days.length > 0) {
+    const { error: historyError } = await supabase
+      .from('recipe_plan_history')
+      .insert(days.map((day) => ({ user_id: userId, recipe_id: picks[day] })))
+    if (historyError) throw historyError
+  }
+}
+
 /** Most recent `planned_date` per recipe is derived client-side; this returns every row. */
 export async function getRecipePlanHistory(): Promise<RecipePlanHistoryEntry[]> {
   const { data, error } = await supabase

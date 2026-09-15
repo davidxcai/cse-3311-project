@@ -3,7 +3,11 @@ import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 
 /** Email/password sign-in and sign-up in one form (toggle at the bottom). */
-export function SignInForm({ onSuccess }: { onSuccess: () => void }) {
+export function SignInForm({
+  onSuccess,
+}: {
+  onSuccess: (mode: 'signin' | 'signup') => void
+}) {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -24,7 +28,7 @@ export function SignInForm({ onSuccess }: { onSuccess: () => void }) {
       setError(error.message)
       return
     }
-    onSuccess()
+    onSuccess(mode)
   }
 
   return (

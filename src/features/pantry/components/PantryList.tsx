@@ -12,7 +12,7 @@ export function PantryList() {
   if (isLoading) return <LoadingState />
   if (isError) return <ErrorState error={error} onRetry={() => refetch()} />
   if (!data || data.length === 0) {
-    return <EmptyState title="Your pantry is empty." description="Add what you have on hand above." />
+    return <EmptyState title="Your pantry is empty." />
   }
 
   return (

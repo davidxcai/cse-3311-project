@@ -1,8 +1,7 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { App } from '@/App'
 import { ProtectedRoute } from '@/features/auth/protected-route'
 import { LoginRoute } from '@/features/auth/routes/LoginRoute'
-import { DiscoverRoute } from '@/features/discover/routes/DiscoverRoute'
 import { RecipesRoute } from '@/features/recipes/routes/RecipesRoute'
 import { RecipeDetailRoute } from '@/features/recipes/routes/RecipeDetailRoute'
 import { NewRecipeRoute } from '@/features/recipes/routes/NewRecipeRoute'
@@ -26,7 +25,7 @@ export const router = createBrowserRouter([
         element: <App />,
         children: [
           { index: true, element: <PlanRoute /> },
-          { path: 'discover', element: <DiscoverRoute /> },
+          { path: 'discover', element: <Navigate to="/recipes" replace /> },
           { path: 'recipes', element: <RecipesRoute /> },
           { path: 'recipes/new', element: <NewRecipeRoute /> },
           { path: 'recipes/:id', element: <RecipeDetailRoute /> },

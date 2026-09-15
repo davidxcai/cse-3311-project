@@ -5,15 +5,7 @@ import { useRecipeQuery } from '@/features/recipes/queries'
 import { useUpsertPlanDay } from '@/features/plan/mutations'
 import { RecipePickerDialog } from './RecipePickerDialog'
 import type { MealPlanEntry } from '@/types/models'
-import { DAY_LABELS } from '@/types/models'
-
-function DayBadge({ day }: { day: number }) {
-  return (
-    <span className="pointer-events-none absolute -left-2 -top-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground shadow-sm">
-      {DAY_LABELS[day]}
-    </span>
-  )
-}
+import { DAY_LABELS_FULL } from '@/types/models'
 
 /**
  * One assigned-day row in the Meals column. The thumbnail links straight to
@@ -27,7 +19,7 @@ export function MealCard({ day, entry }: { day: number; entry: MealPlanEntry }) 
 
   return (
     <>
-      <div className="group flex w-72 max-w-full items-center gap-3">
+      <div className="group flex w-72 max-w-full items-start gap-3">
         <div className="relative h-24 w-24 shrink-0">
           {recipe.data ? (
             <Link
@@ -52,7 +44,6 @@ export function MealCard({ day, entry }: { day: number; entry: MealPlanEntry }) 
               className="h-full w-full cursor-pointer overflow-hidden rounded-2xl bg-muted"
             />
           )}
-          <DayBadge day={day} />
           {recipe.data && (
             <div className="absolute -right-2 -top-2 hidden gap-1 group-hover:flex group-focus-within:flex">
               <button
@@ -74,7 +65,10 @@ export function MealCard({ day, entry }: { day: number; entry: MealPlanEntry }) 
             </div>
           )}
         </div>
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 pt-1">
+          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+            {DAY_LABELS_FULL[day]}
+          </p>
           {recipe.data ? (
             <Link to={`/recipes/${recipe.data.id}`} className="line-clamp-3 text-sm font-medium hover:underline">
               {recipe.data.name}

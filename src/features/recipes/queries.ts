@@ -39,6 +39,12 @@ export function useSavedRecipesQuery() {
   })
 }
 
+/** Set of saved recipe ids, for driving the heart button on recipe cards. */
+export function useSavedRecipeIds(): Set<string> {
+  const { data } = useSavedRecipesQuery()
+  return new Set((data ?? []).map((r) => r.id))
+}
+
 export function useRecipesWithIngredientsQuery() {
   return useQuery({
     queryKey: ['recipes', 'with-ingredients'],

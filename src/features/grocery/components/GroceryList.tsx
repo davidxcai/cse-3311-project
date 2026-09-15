@@ -13,7 +13,7 @@ export function GroceryList() {
   if (isLoading) return <LoadingState />
   if (isError) return <ErrorState error={error} onRetry={() => refetch()} />
   if (!data || data.length === 0) {
-    return <EmptyState title="No items yet." description="Generate from your active plan or add one manually." />
+    return <EmptyState title="No items yet." />
   }
 
   return (

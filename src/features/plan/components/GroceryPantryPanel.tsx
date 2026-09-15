@@ -24,8 +24,8 @@ export function GroceryPantryPanel() {
   return (
     <Card className="h-fit border-0 bg-popover shadow-none">
       <Tabs defaultValue="groceries">
-        <CardHeader className="flex items-center justify-between gap-3">
-          <TabsList>
+        <CardHeader className="px-6">
+          <TabsList variant="line" className="w-full">
             <TabsTrigger value="groceries">Groceries</TabsTrigger>
             <TabsTrigger value="pantry">Pantry</TabsTrigger>
           </TabsList>
