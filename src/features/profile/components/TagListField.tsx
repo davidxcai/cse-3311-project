@@ -1,8 +1,10 @@
-import { IngredientPicker } from '@/components/common/IngredientPicker'
+import { useState, type KeyboardEvent } from 'react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { canonicalName } from '@/lib/utils'
 
-export function IngredientTagListField({
+/** Free-text tag picker backed by a curated suggestion list — not tied to the ingredients table. */
+export function TagListField({
   value,
   onChange,
   placeholder,
@@ -13,19 +15,34 @@ export function IngredientTagListField({
   placeholder?: string
   suggestions?: string[]
 }) {
+  const [term, setTerm] = useState('')
   const chosen = new Set(value.map(canonicalName))
   const remaining = suggestions.filter((s) => !chosen.has(canonicalName(s)))
 
+  function add(name: string) {
+    const trimmed = name.trim()
+    if (!trimmed || chosen.has(canonicalName(trimmed))) return
+    onChange([...value, trimmed])
+    setTerm('')
+  }
+
+  function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      add(term)
+    }
+  }
+
   return (
-    <div className="space-y-2">
-      <IngredientPicker exclude={value} onSelect={(name) => onChange([...value, name])} placeholder={placeholder} />
+    <div className="space-y-3">
+      <Input value={term} placeholder={placeholder} onChange={(e) => setTerm(e.target.value)} onKeyDown={handleKeyDown} />
       {remaining.length > 0 && (
         <div className="flex flex-wrap justify-center gap-2">
           {remaining.map((name) => (
             <button
               key={name}
               type="button"
-              onClick={() => onChange([...value, name])}
+              onClick={() => add(name)}
               className="rounded-full border border-border px-3 py-1 text-xs text-foreground hover:border-primary"
             >
               {name}

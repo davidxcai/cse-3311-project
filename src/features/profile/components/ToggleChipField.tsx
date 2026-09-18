@@ -1,3 +1,10 @@
+function toLabel(tag: string): string {
+  return tag
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
 /** Generic fixed-option toggle-chip picker. Backs both dietary restrictions and allergies. */
 export function ToggleChipField<T extends string>({
   options,
@@ -23,10 +30,10 @@ export function ToggleChipField<T extends string>({
             'rounded-full border px-3 py-1 text-xs ' +
             (value.includes(tag)
               ? 'border-primary bg-primary text-primary-foreground'
-              : 'border-border text-muted-foreground')
+              : 'border-border text-foreground')
           }
         >
-          {tag}
+          {toLabel(tag)}
         </button>
       ))}
     </div>

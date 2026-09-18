@@ -2,13 +2,14 @@ import { useState, type FormEvent } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 
-/** Email/password sign-in and sign-up in one form (toggle at the bottom). */
+/** Email/password sign-in form. */
 export function SignInForm({
   onSuccess,
+  onSwitchToSignup,
 }: {
-  onSuccess: (mode: 'signin' | 'signup') => void
+  onSuccess: () => void
+  onSwitchToSignup: () => void
 }) {
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -18,17 +19,13 @@ export function SignInForm({
     e.preventDefault()
     setBusy(true)
     setError(null)
-    const fn =
-      mode === 'signin'
-        ? supabase.auth.signInWithPassword({ email, password })
-        : supabase.auth.signUp({ email, password })
-    const { error } = await fn
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
     setBusy(false)
     if (error) {
       setError(error.message)
       return
     }
-    onSuccess(mode)
+    onSuccess()
   }
 
   return (
@@ -52,14 +49,14 @@ export function SignInForm({
       />
       {error && <p className="text-sm text-destructive">{error}</p>}
       <Button type="submit" className="w-full" disabled={busy}>
-        {mode === 'signin' ? 'Sign in' : 'Create account'}
+        {busy ? 'Signing in…' : 'Sign in'}
       </Button>
       <button
         type="button"
         className="w-full text-center text-xs text-muted-foreground hover:underline"
-        onClick={() => setMode((m) => (m === 'signin' ? 'signup' : 'signin'))}
+        onClick={onSwitchToSignup}
       >
-        {mode === 'signin' ? 'Need an account? Sign up' : 'Have an account? Sign in'}
+        Need an account? Sign up
       </button>
     </form>
   )
