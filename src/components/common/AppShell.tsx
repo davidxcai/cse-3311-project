@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Nav, navLinks } from '@/components/common/Nav'
+import { display } from '@/data/iteration'
 
 /** Persistent chrome around every protected route: header, nav, content well. */
 export function AppShell({ children }: { children: ReactNode }) {
@@ -24,35 +25,39 @@ export function AppShell({ children }: { children: ReactNode }) {
               Thyme Saver
             </span>
           </a>
-          <div className="hidden items-center gap-3 md:flex">
-            <Nav />
-            <Link
-              to="/settings"
-              aria-label="Settings"
-              className={buttonVariants({ variant: 'ghost', size: 'icon' })}
-            >
-              <SettingsIcon className="size-4" />
-            </Link>
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              aria-label="Menu"
-              className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'md:hidden')}
-            >
-              <Menu className="size-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {navLinks.map((link) => (
-                <DropdownMenuItem key={link.to} asChild>
-                  <Link to={link.to}>{link.label}</Link>
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/settings">Settings</Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {display.iteration2 && (
+            <>
+              <div className="hidden items-center gap-3 md:flex">
+                <Nav />
+                <Link
+                  to="/settings"
+                  aria-label="Settings"
+                  className={buttonVariants({ variant: 'ghost', size: 'icon' })}
+                >
+                  <SettingsIcon className="size-4" />
+                </Link>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  aria-label="Menu"
+                  className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'md:hidden')}
+                >
+                  <Menu className="size-4" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {navLinks.map((link) => (
+                    <DropdownMenuItem key={link.to} asChild>
+                      <Link to={link.to}>{link.label}</Link>
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings">Settings</Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          )}
         </div>
       </header>
       <main className="mx-auto min-h-0 w-full max-w-7xl flex-1 overflow-y-auto px-6 py-8 lg:px-10">{children}</main>

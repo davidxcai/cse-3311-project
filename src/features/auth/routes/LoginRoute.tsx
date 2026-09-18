@@ -5,12 +5,14 @@ import { SignInForm } from '@/features/auth/components/SignInForm'
 import { SignUpFlow } from '@/features/auth/components/SignUpFlow'
 import { LoadingState } from '@/components/common/LoadingState'
 import { useRecipesQuery } from '@/features/recipes/queries'
+import { display } from '@/data/iteration'
 
 export function LoginRoute() {
   const { session, loading } = useSession()
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const redirect = params.get('redirect') || '/'
+  const defaultHome = display.iteration2 ? '/' : '/settings'
+  const redirect = params.get('redirect') || defaultHome
   const [mode, setMode] = useState<'signup' | 'login'>('signup')
   const [recipes, setRecipes] = useState<Array<{ thumb_url: string | null }>>([])
   const { data: allRecipes } = useRecipesQuery()
@@ -28,7 +30,7 @@ export function LoginRoute() {
 
   return mode === 'signup' ? (
     <SignUpFlow
-      onSuccess={() => navigate('/', { replace: true })}
+      onSuccess={() => navigate(defaultHome, { replace: true })}
       onSwitchToLogin={() => setMode('login')}
     />
   ) : (

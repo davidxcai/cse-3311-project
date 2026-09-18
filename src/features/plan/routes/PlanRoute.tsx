@@ -1,14 +1,19 @@
 import { useState } from 'react'
 import { AutoPlanPanel } from '@/features/plan/components/AutoPlanPanel'
 import { MealsColumn } from '@/features/plan/components/MealsColumn'
-import { GroceryPantryPanel } from '@/features/plan/components/GroceryPantryPanel'
+import { GroceryPantryPanel, PantryOnlyPanel } from '@/features/plan/components/GroceryPantryPanel'
 import { Button } from '@/components/ui/button'
 import { useMealPlanQuery } from '@/features/plan/queries'
+import { display } from '@/data/iteration'
 
 export function PlanRoute() {
   const [autoPlanOpen, setAutoPlanOpen] = useState(false)
   const { data } = useMealPlanQuery()
   const hasPlan = (data ?? []).some((e) => e.is_active)
+
+  if (!display.iteration3) {
+    return <PantryOnlyPanel />
+  }
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-6">

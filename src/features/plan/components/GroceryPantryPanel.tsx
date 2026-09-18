@@ -8,6 +8,24 @@ import { useAddPantryItem } from '@/features/pantry/mutations'
 import { PantryList } from '@/features/pantry/components/PantryList'
 import { IngredientPicker } from '@/components/common/IngredientPicker'
 
+/** Iteration 2: pantry only, no grocery list/meal plan yet. */
+export function PantryOnlyPanel() {
+  const pantry = usePantryQuery()
+  const addPantryItem = useAddPantryItem()
+
+  return (
+    <div className="flex max-w-md flex-col gap-4">
+      <h1 className="text-2xl font-semibold">Pantry</h1>
+      <IngredientPicker
+        exclude={(pantry.data ?? []).map((i) => i.ingredient)}
+        onSelect={(name) => addPantryItem.mutate(name)}
+        placeholder="Add an ingredient…"
+      />
+      <PantryList className="max-h-none" />
+    </div>
+  )
+}
+
 /** Right-column panel: Groceries (default) and Pantry as in-panel tabs, no separate routes. */
 export function GroceryPantryPanel() {
   const generate = useGenerateGroceryList()

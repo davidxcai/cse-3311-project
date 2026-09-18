@@ -9,6 +9,7 @@ import { LoadingState } from '@/components/common/LoadingState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Input } from '@/components/ui/input'
+import { display } from '@/data/iteration'
 import type { DietTag } from '@/types/models'
 
 export function RecipesRoute() {
@@ -53,11 +54,15 @@ export function RecipesRoute() {
             recipes={data}
             savedIds={savedIds}
             onToggleSave={(recipe) => toggleSave.mutate({ recipeId: recipe.id, saved: savedIds.has(recipe.id) })}
-            renderIngredients={(recipe) => {
-              const match = matchById.get(recipe.id)
-              if (!match) return undefined
-              return { have: match.haveCount, total: match.haveCount + match.missingCount }
-            }}
+            renderIngredients={
+              display.iteration3
+                ? (recipe) => {
+                    const match = matchById.get(recipe.id)
+                    if (!match) return undefined
+                    return { have: match.haveCount, total: match.haveCount + match.missingCount }
+                  }
+                : undefined
+            }
           />
         )}
       </div>

@@ -1,10 +1,15 @@
 import { NavLink } from 'react-router-dom'
 import { cn } from '@/lib/utils'
+import { display } from '@/data/iteration'
 
 const sections = [
   { to: '/recipes', label: 'Discover', end: true },
-  { to: '/my-recipes', label: 'My Recipes' },
-  { to: '/saved-recipes', label: 'Saved' },
+  ...(display.iteration4
+    ? [
+        { to: '/my-recipes', label: 'My Recipes' },
+        { to: '/saved-recipes', label: 'Saved' },
+      ]
+    : []),
 ]
 
 /**
