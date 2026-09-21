@@ -12,7 +12,7 @@ export function LoginRoute() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const defaultHome = display.iteration2 ? '/' : '/settings'
-  const redirect = params.get('redirect') || defaultHome
+  const redirect = display.iteration2 ? params.get('redirect') || defaultHome : defaultHome
   const [mode, setMode] = useState<'signup' | 'login'>('signup')
   const [recipes, setRecipes] = useState<Array<{ thumb_url: string | null }>>([])
   const { data: allRecipes } = useRecipesQuery()
