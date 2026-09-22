@@ -19,12 +19,21 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="flex h-screen flex-col">
       <header className="shrink-0">
         <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 lg:px-10">
-          <a href="/" className="flex items-center gap-2">
-            <img src="/thyme-saver-logo.svg" alt="" className="h-7 w-auto" />
-            <span className="hidden font-logo text-xl font-semibold text-foreground md:inline">
-              Thyme Saver
-            </span>
-          </a>
+          {display.iteration2 ? (
+            <a href="/" className="flex items-center gap-2">
+              <img src="/thyme-saver-logo.svg" alt="" className="h-7 w-auto" />
+              <span className="hidden font-logo text-xl font-semibold text-foreground md:inline">
+                Thyme Saver
+              </span>
+            </a>
+          ) : (
+            <div className="flex items-center gap-2">
+              <img src="/thyme-saver-logo.svg" alt="" className="h-7 w-auto" />
+              <span className="hidden font-logo text-xl font-semibold text-foreground md:inline">
+                Thyme Saver
+              </span>
+            </div>
+          )}
           {display.iteration2 && (
             <>
               <div className="hidden items-center gap-3 md:flex">
