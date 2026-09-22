@@ -10,6 +10,7 @@ import { MyRecipesRoute } from '@/features/recipes/routes/MyRecipesRoute'
 import { SavedRecipesRoute } from '@/features/recipes/routes/SavedRecipesRoute'
 import { PlanRoute } from '@/features/plan/routes/PlanRoute'
 import { SettingsRoute } from '@/features/profile/routes/SettingsRoute'
+import { display } from '@/data/iteration'
 
 /**
  * The whole route tree. Protected routes render inside <ProtectedRoute> → <App> (AppShell + outlet).
@@ -24,7 +25,10 @@ export const router = createBrowserRouter([
       {
         element: <App />,
         children: [
-          { index: true, element: <PlanRoute /> },
+          {
+            index: true,
+            element: display.iteration2 ? <PlanRoute /> : <Navigate to="/settings" replace />,
+          },
           { path: 'discover', element: <Navigate to="/recipes" replace /> },
           { path: 'recipes', element: <RecipesRoute /> },
           { path: 'recipes/new', element: <NewRecipeRoute /> },

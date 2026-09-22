@@ -5,6 +5,7 @@ const recipe = (over: Partial<RankRecipeInput> & { id: string }): RankRecipeInpu
   name: over.id,
   diet_tags: [],
   ingredients: [],
+  ingredientAllergens: [],
   ...over,
 })
 
@@ -15,6 +16,7 @@ describe('rankRecipes', () => {
       pantry: ['eggs', 'flour'],
       restrictions: [],
       disliked: [],
+      allergies: [],
     })
 
     expect(result.haveCount).toBe(2)
@@ -29,6 +31,7 @@ describe('rankRecipes', () => {
       pantry: ['eggs', '  flOUR  '],
       restrictions: [],
       disliked: [],
+      allergies: [],
     })
 
     expect(result.coverage).toBe(1)
@@ -44,6 +47,22 @@ describe('rankRecipes', () => {
       pantry: ['rice'],
       restrictions: [],
       disliked: ['Cilantro'],
+      allergies: [],
+    })
+
+    expect(results.map((r) => r.id)).toEqual(['clean'])
+  })
+
+  it('excludes a recipe touching a selected allergen category, even without a name match', () => {
+    const results = rankRecipes({
+      recipes: [
+        recipe({ id: 'shrimp-dish', ingredients: ['Shrimp', 'Rice'], ingredientAllergens: ['Shellfish'] }),
+        recipe({ id: 'clean', ingredients: ['Rice', 'Beans'], ingredientAllergens: [] }),
+      ],
+      pantry: ['rice'],
+      restrictions: [],
+      disliked: [],
+      allergies: ['Shellfish'],
     })
 
     expect(results.map((r) => r.id)).toEqual(['clean'])
@@ -58,6 +77,7 @@ describe('rankRecipes', () => {
       pantry: [],
       restrictions: ['vegetarian', 'gluten_free'],
       disliked: [],
+      allergies: [],
     })
 
     expect(results.map((r) => r.id)).toEqual(['veg-and-gf'])
@@ -80,6 +100,7 @@ describe('rankRecipes', () => {
       pantry: ['egg', 'milk'],
       restrictions: [],
       disliked: [],
+      allergies: [],
     })
 
     expect(results.map((r) => r.id)).toEqual(['full', 'x', 'a', 'b', 'c'])
@@ -91,6 +112,7 @@ describe('rankRecipes', () => {
       pantry: ['egg'],
       restrictions: [],
       disliked: [],
+      allergies: [],
     })
 
     expect(result.coverage).toBe(0)
@@ -103,6 +125,7 @@ describe('rankRecipes', () => {
       pantry: ['egg'],
       restrictions: [],
       disliked: [],
+      allergies: [],
     })
 
     expect(result.haveCount).toBe(1)

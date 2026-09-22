@@ -32,6 +32,7 @@ export function SettingsRoute() {
   const [restrictions, setRestrictions] = useState<DietTag[]>([])
   const [disliked, setDisliked] = useState<string[]>([])
   const [allergies, setAllergies] = useState<string[]>([])
+  const [allergyIngredients, setAllergyIngredients] = useState<string[]>([])
 
   useEffect(() => {
     if (!data) return
@@ -39,6 +40,7 @@ export function SettingsRoute() {
     setRestrictions(data.dietary_restrictions)
     setDisliked(data.disliked_ingredients)
     setAllergies(data.allergies)
+    setAllergyIngredients(data.allergy_ingredients)
   }, [data])
 
   return (
@@ -98,6 +100,7 @@ export function SettingsRoute() {
                     dietary_restrictions: restrictions,
                     disliked_ingredients: disliked,
                     allergies,
+                    allergy_ingredients: allergyIngredients,
                   })
                 }}
                 className="space-y-6"
@@ -123,6 +126,15 @@ export function SettingsRoute() {
                     <div className="space-y-2">
                       <p className="text-sm font-medium">Allergies</p>
                       <ToggleChipField options={ALLERGY_TYPES} value={allergies} onChange={setAllergies} />
+                    </div>
+
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Other ingredient allergies</p>
+                      <IngredientTagListField
+                        value={allergyIngredients}
+                        onChange={setAllergyIngredients}
+                        placeholder="Add an ingredient…"
+                      />
                     </div>
 
                     <div className="space-y-2">

@@ -50,12 +50,16 @@ export async function listRecipesWithIngredients(): Promise<
   Array<
     Pick<Recipe, 'id' | 'name' | 'diet_tags' | 'source' | 'area' | 'thumb_url'> & {
       ingredients: string[]
+      /** distinct allergen categories touched by any of this recipe's ingredients */
+      ingredientAllergens: string[]
     }
   >
 > {
   const { data, error } = await supabase
     .from('recipes')
-    .select('id, name, diet_tags, source, area, thumb_url, recipe_ingredients(ingredient)')
+    .select(
+      'id, name, diet_tags, source, area, thumb_url, recipe_ingredients(ingredient, ingredients(allergen_types))',
+    )
   if (error) throw error
   type Row = {
     id: string
@@ -64,7 +68,7 @@ export async function listRecipesWithIngredients(): Promise<
     source: Recipe['source']
     area: Recipe['area']
     thumb_url: Recipe['thumb_url']
-    recipe_ingredients: { ingredient: string }[] | null
+    recipe_ingredients: { ingredient: string; ingredients: { allergen_types: string[] } | null }[] | null
   }
   return ((data ?? []) as unknown as Row[]).map((row) => ({
     id: row.id,
@@ -74,6 +78,9 @@ export async function listRecipesWithIngredients(): Promise<
     area: row.area,
     thumb_url: row.thumb_url,
     ingredients: (row.recipe_ingredients ?? []).map((ri) => ri.ingredient),
+    ingredientAllergens: [
+      ...new Set((row.recipe_ingredients ?? []).flatMap((ri) => ri.ingredients?.allergen_types ?? [])),
+    ],
   }))
 }
 

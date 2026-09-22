@@ -58,6 +58,7 @@ export type Ingredient = {
   description: string | null
   image_url: string | null
   type: string | null
+  allergen_types: string[]
 }
 
 export type RecipeSource = 'system' | 'user'
@@ -90,7 +91,10 @@ export type Profile = {
   display_name: string | null
   dietary_restrictions: DietTag[]
   disliked_ingredients: string[]
+  /** categories from ALLERGY_TYPES; hard-excludes any recipe with an ingredient tagged with one */
   allergies: string[]
+  /** specific ingredients (not tied to a category) the user is allergic to; same hard-exclude treatment as disliked_ingredients */
+  allergy_ingredients: string[]
   created_at: string
 }
 

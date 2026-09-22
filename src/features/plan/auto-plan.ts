@@ -12,6 +12,8 @@ export type AutoPlanRecipeInput = {
   diet_tags: string[]
   /** ingredient names, as stored in recipe_ingredients.ingredient */
   ingredients: string[]
+  /** distinct allergen categories (from ingredients.allergen_types) touched by any of this recipe's ingredients */
+  ingredientAllergens: string[]
   source: 'system' | 'user'
   isSaved: boolean
   area: string | null
@@ -31,8 +33,10 @@ export type AutoPlanInput = {
   pantry: string[]
   /** every one of these must appear in a recipe's diet_tags for it to qualify */
   restrictions: string[]
-  /** exclude any recipe containing one of these ingredient names */
+  /** exclude any recipe containing one of these ingredient names (disliked or specific-ingredient allergies) */
   disliked: string[]
+  /** exclude any recipe touching one of these allergen categories */
+  allergies: string[]
   /** recipe id -> most recent planned_date (YYYY-MM-DD) it was assigned to a plan day */
   history: Record<string, string>
   scope: CollectionScope
@@ -122,8 +126,9 @@ function sortAutoPlan(list: AutoPlanCandidate[], cuisines: string[]): AutoPlanCa
  * Score and sort Auto Plan candidates.
  *
  * 1. Keep recipes in the requested `scope` (system / mine / saved — OR'd).
- * 2. Exclude a recipe if it contains a disliked ingredient, or if any required
- *    restriction is missing from its diet_tags (same rule as discover/rank.ts)
+ * 2. Exclude a recipe if it contains a disliked ingredient, touches an allergen
+ *    category the user selected, or if any required restriction is missing
+ *    from its diet_tags (same rule as discover/rank.ts)
  *    — a recipe with no tags at all is excluded the same as one that's tagged
  *    against the restriction; an unlabeled recipe never gets the benefit of
  *    the doubt.
@@ -140,6 +145,7 @@ export function buildAutoPlanCandidates(input: AutoPlanInput): AutoPlanResult {
   const pantry = new Set(input.pantry.map(canon))
   const disliked = new Set(input.disliked.map(canon))
   const restrictions = [...new Set(input.restrictions.map(canon))].filter(Boolean)
+  const allergies = new Set(input.allergies.map(canon))
 
   const scored: AutoPlanCandidate[] = []
 
@@ -148,6 +154,7 @@ export function buildAutoPlanCandidates(input: AutoPlanInput): AutoPlanResult {
 
     const dietTags = new Set(recipe.diet_tags.map(canon))
     if (restrictions.some((tag) => !dietTags.has(tag))) continue
+    if (recipe.ingredientAllergens.some((a) => allergies.has(canon(a)))) continue
 
     const distinct = new Map<string, string>()
     for (const raw of recipe.ingredients) {

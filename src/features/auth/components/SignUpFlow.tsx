@@ -5,7 +5,6 @@ import { useRecipesQuery } from "@/features/recipes/queries";
 import { updateMyProfile } from "@/features/profile/api";
 import { ToggleChipField } from "@/features/profile/components/ToggleChipField";
 import { IngredientTagListField } from "@/features/profile/components/IngredientTagListField";
-import { TagListField } from "@/features/profile/components/TagListField";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -23,6 +22,7 @@ const STEPS: Screen[] = ["dietary", "allergies", "disliked", "account"];
 interface SignUpData {
     dietary_restrictions: DietTag[];
     allergies: string[];
+    allergy_ingredients: string[];
     disliked_ingredients: string[];
     email: string;
     password: string;
@@ -39,6 +39,7 @@ export function SignUpFlow({
     const [formData, setFormData] = useState<SignUpData>({
         dietary_restrictions: [],
         allergies: [],
+        allergy_ingredients: [],
         disliked_ingredients: [],
         email: "",
         password: "",
@@ -89,7 +90,10 @@ export function SignUpFlow({
         if (screen === "dietary")
             return formData.dietary_restrictions.length > 0 ? "Next" : "Skip";
         if (screen === "allergies")
-            return formData.allergies.length > 0 ? "Next" : "Skip";
+            return formData.allergies.length > 0 ||
+                formData.allergy_ingredients.length > 0
+                ? "Next"
+                : "Skip";
         if (screen === "disliked")
             return formData.disliked_ingredients.length > 0 ? "Next" : "Skip";
         return "Next";
@@ -118,6 +122,7 @@ export function SignUpFlow({
                 {
                     dietary_restrictions: formData.dietary_restrictions,
                     allergies: formData.allergies,
+                    allergy_ingredients: formData.allergy_ingredients,
                     disliked_ingredients: formData.disliked_ingredients,
                 },
                 authData.user.id,
@@ -290,17 +295,32 @@ export function SignUpFlow({
                                         />
                                     )}
                                     {screen === "allergies" && (
-                                        <TagListField
-                                            value={formData.allergies}
-                                            onChange={(allergies) =>
-                                                setFormData((prev) => ({
-                                                    ...prev,
-                                                    allergies,
-                                                }))
-                                            }
-                                            placeholder="Add an allergy…"
-                                            suggestions={ALLERGY_TYPES}
-                                        />
+                                        <div className="w-full space-y-4">
+                                            <ToggleChipField
+                                                options={ALLERGY_TYPES}
+                                                value={formData.allergies}
+                                                onChange={(allergies) =>
+                                                    setFormData((prev) => ({
+                                                        ...prev,
+                                                        allergies,
+                                                    }))
+                                                }
+                                            />
+                                            <IngredientTagListField
+                                                value={
+                                                    formData.allergy_ingredients
+                                                }
+                                                onChange={(
+                                                    allergy_ingredients,
+                                                ) =>
+                                                    setFormData((prev) => ({
+                                                        ...prev,
+                                                        allergy_ingredients,
+                                                    }))
+                                                }
+                                                placeholder="Add an ingredient…"
+                                            />
+                                        </div>
                                     )}
                                     {screen === "disliked" && (
                                         <IngredientTagListField
@@ -387,14 +407,23 @@ export function SignUpFlow({
                 )}
 
                 {screen === "allergies" && (
-                    <div className="w-full max-w-md">
-                        <TagListField
+                    <div className="w-full max-w-md space-y-4">
+                        <ToggleChipField
+                            options={ALLERGY_TYPES}
                             value={formData.allergies}
                             onChange={(allergies) =>
                                 setFormData((prev) => ({ ...prev, allergies }))
                             }
-                            placeholder="Add an allergy…"
-                            suggestions={ALLERGY_TYPES}
+                        />
+                        <IngredientTagListField
+                            value={formData.allergy_ingredients}
+                            onChange={(allergy_ingredients) =>
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    allergy_ingredients,
+                                }))
+                            }
+                            placeholder="Add an ingredient…"
                         />
                     </div>
                 )}

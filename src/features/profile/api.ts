@@ -4,7 +4,9 @@ import type { DietTag, Profile } from '@/types/models'
 export async function getMyProfile(): Promise<Profile> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, display_name, dietary_restrictions, disliked_ingredients, allergies, created_at')
+    .select(
+      'id, display_name, dietary_restrictions, disliked_ingredients, allergies, allergy_ingredients, created_at',
+    )
     .single()
   if (error) throw error
   return data as Profile
@@ -15,6 +17,7 @@ export type ProfileUpdate = {
   dietary_restrictions?: DietTag[]
   disliked_ingredients?: string[]
   allergies?: string[]
+  allergy_ingredients?: string[]
 }
 
 export async function updateMyProfile(patch: ProfileUpdate, userId: string): Promise<void> {

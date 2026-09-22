@@ -26,7 +26,8 @@ export function useSuggestedRecipes(): State {
       recipes: recipes.data,
       pantry: pantry.data.map((p) => p.ingredient),
       restrictions: profile.data.dietary_restrictions,
-      disliked: profile.data.disliked_ingredients,
+      disliked: [...profile.data.disliked_ingredients, ...profile.data.allergy_ingredients],
+      allergies: profile.data.allergies,
     })
   }, [pantry.data, profile.data, recipes.data])
 

@@ -72,18 +72,21 @@ export type Database = {
       }
       ingredients: {
         Row: {
+          allergen_types: Database["public"]["Enums"]["allergen_type"][]
           description: string | null
           image_url: string | null
           name: string
           type: string | null
         }
         Insert: {
+          allergen_types?: Database["public"]["Enums"]["allergen_type"][]
           description?: string | null
           image_url?: string | null
           name: string
           type?: string | null
         }
         Update: {
+          allergen_types?: Database["public"]["Enums"]["allergen_type"][]
           description?: string | null
           image_url?: string | null
           name?: string
@@ -93,22 +96,22 @@ export type Database = {
       }
       meal_plan_entries: {
         Row: {
-          plan_date: string
           is_active: boolean
+          plan_date: string
           recipe_id: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
-          plan_date: string
           is_active?: boolean
+          plan_date: string
           recipe_id?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
-          plan_date?: string
           is_active?: boolean
+          plan_date?: string
           recipe_id?: string | null
           updated_at?: string
           user_id?: string
@@ -151,7 +154,8 @@ export type Database = {
       }
       profiles: {
         Row: {
-          allergies: string[]
+          allergies: Database["public"]["Enums"]["allergen_type"][]
+          allergy_ingredients: string[]
           created_at: string
           dietary_restrictions: Database["public"]["Enums"]["diet_tag"][]
           disliked_ingredients: string[]
@@ -159,7 +163,8 @@ export type Database = {
           id: string
         }
         Insert: {
-          allergies?: string[]
+          allergies?: Database["public"]["Enums"]["allergen_type"][]
+          allergy_ingredients?: string[]
           created_at?: string
           dietary_restrictions?: Database["public"]["Enums"]["diet_tag"][]
           disliked_ingredients?: string[]
@@ -167,7 +172,8 @@ export type Database = {
           id: string
         }
         Update: {
-          allergies?: string[]
+          allergies?: Database["public"]["Enums"]["allergen_type"][]
+          allergy_ingredients?: string[]
           created_at?: string
           dietary_restrictions?: Database["public"]["Enums"]["diet_tag"][]
           disliked_ingredients?: string[]
@@ -341,6 +347,19 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      allergen_type:
+        | "Shellfish"
+        | "Fish"
+        | "Gluten"
+        | "Dairy"
+        | "Peanuts"
+        | "Tree Nuts"
+        | "Soy"
+        | "Eggs"
+        | "Sesame"
+        | "Mustard"
+        | "Sulfites"
+        | "Nightshades"
       diet_tag:
         | "vegetarian"
         | "vegan"
@@ -478,6 +497,20 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      allergen_type: [
+        "Shellfish",
+        "Fish",
+        "Gluten",
+        "Dairy",
+        "Peanuts",
+        "Tree Nuts",
+        "Soy",
+        "Eggs",
+        "Sesame",
+        "Mustard",
+        "Sulfites",
+        "Nightshades",
+      ],
       diet_tag: [
         "vegetarian",
         "vegan",
