@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useRecipesQuery } from "@/features/recipes/queries";
 import { updateMyProfile } from "@/features/profile/api";
@@ -36,6 +37,7 @@ export function SignUpFlow({
     onSuccess: () => void;
     onSwitchToLogin: () => void;
 }) {
+    const queryClient = useQueryClient();
     const [screen, setScreen] = useState<Screen>("home");
     const [formData, setFormData] = useState<SignUpData>({
         dietary_restrictions: [],
@@ -128,6 +130,11 @@ export function SignUpFlow({
                 },
                 authData.user.id,
             );
+            // A session already exists by this point (signUp's SIGNED_IN event can
+            // fire before this write completes), so anything that fetched the
+            // profile early is holding the trigger's blank row — invalidate it.
+            await queryClient.invalidateQueries({ queryKey: ["profile"] });
+            queryClient.invalidateQueries({ queryKey: ["suggestions"] });
 
             onSuccess();
         } catch (err) {
