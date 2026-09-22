@@ -11,7 +11,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
-import { ALLERGY_TYPES, COMMON_DISLIKED_INGREDIENTS, DIET_TAGS, type DietTag } from '@/types/models'
+import {
+  ALLERGY_TYPES,
+  COMMON_DISLIKED_INGREDIENTS,
+  DIET_TAGS,
+  type AllergenType,
+  type DietTag,
+} from '@/types/models'
 
 const SECTIONS = ['account', 'eating-preferences'] as const
 type Section = (typeof SECTIONS)[number]
@@ -31,7 +37,7 @@ export function SettingsRoute() {
   const [displayName, setDisplayName] = useState('')
   const [restrictions, setRestrictions] = useState<DietTag[]>([])
   const [disliked, setDisliked] = useState<string[]>([])
-  const [allergies, setAllergies] = useState<string[]>([])
+  const [allergies, setAllergies] = useState<AllergenType[]>([])
   const [allergyIngredients, setAllergyIngredients] = useState<string[]>([])
 
   useEffect(() => {

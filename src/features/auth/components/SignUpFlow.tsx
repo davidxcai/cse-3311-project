@@ -11,6 +11,7 @@ import {
     ALLERGY_TYPES,
     COMMON_DISLIKED_INGREDIENTS,
     DIET_TAGS,
+    type AllergenType,
     type DietTag,
 } from "@/types/models";
 
@@ -21,7 +22,7 @@ const STEPS: Screen[] = ["dietary", "allergies", "disliked", "account"];
 
 interface SignUpData {
     dietary_restrictions: DietTag[];
-    allergies: string[];
+    allergies: AllergenType[];
     allergy_ingredients: string[];
     disliked_ingredients: string[];
     email: string;

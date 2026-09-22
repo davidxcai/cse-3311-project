@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import type { DietTag, Profile } from '@/types/models'
+import type { AllergenType, DietTag, Profile } from '@/types/models'
 
 export async function getMyProfile(): Promise<Profile> {
   const { data, error } = await supabase
@@ -16,7 +16,7 @@ export type ProfileUpdate = {
   display_name?: string | null
   dietary_restrictions?: DietTag[]
   disliked_ingredients?: string[]
-  allergies?: string[]
+  allergies?: AllergenType[]
   allergy_ingredients?: string[]
 }
 

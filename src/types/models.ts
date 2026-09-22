@@ -38,7 +38,21 @@ export const COMMON_DISLIKED_INGREDIENTS = [
   'Turnips',
 ]
 
-export const ALLERGY_TYPES = [
+export type AllergenType =
+  | 'Shellfish'
+  | 'Fish'
+  | 'Gluten'
+  | 'Dairy'
+  | 'Peanuts'
+  | 'Tree Nuts'
+  | 'Soy'
+  | 'Eggs'
+  | 'Sesame'
+  | 'Mustard'
+  | 'Sulfites'
+  | 'Nightshades'
+
+export const ALLERGY_TYPES: AllergenType[] = [
   'Shellfish',
   'Fish',
   'Gluten',
@@ -92,7 +106,7 @@ export type Profile = {
   dietary_restrictions: DietTag[]
   disliked_ingredients: string[]
   /** categories from ALLERGY_TYPES; hard-excludes any recipe with an ingredient tagged with one */
-  allergies: string[]
+  allergies: AllergenType[]
   /** specific ingredients (not tied to a category) the user is allergic to; same hard-exclude treatment as disliked_ingredients */
   allergy_ingredients: string[]
   created_at: string
