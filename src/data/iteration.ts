@@ -3,7 +3,7 @@
 // iteration1 true and setting iteration3 true also unlocks iteration2.
 const flags = {
   iteration1: true,
-  iteration2: false,
+  iteration2: true,
   iteration3: false,
   iteration4: false,
 }

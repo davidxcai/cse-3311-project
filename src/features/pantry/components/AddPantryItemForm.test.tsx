@@ -1,4 +1,3 @@
-// src/features/pantry/components/AddPantryItemForm.test.tsx
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // 1. Mock Supabase before module imports
@@ -19,12 +18,22 @@ vi.mock('../mutations', () => ({
   useAddPantryItem: vi.fn(),
 }))
 
-import { render, screen } from '@testing-library/react'
+// 3. Mock IngredientPicker so fireEvent.change triggers onSelect in tests
+vi.mock('@/components/common/IngredientPicker', () => ({
+  IngredientPicker: ({ onSelect }: { onSelect: (val: string) => void }) => (
+    <input
+      role="textbox"
+      placeholder="Search ingredients…"
+      onChange={(e) => onSelect(e.target.value)}
+    />
+  ),
+}))
+
+import { render, screen, fireEvent } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AddPantryItemForm } from './AddPantryItemForm'
 import { useAddPantryItem } from '../mutations'
 
-// Helper function to create a fresh QueryClient for every test run
 function renderWithQueryClient(ui: React.ReactElement) {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -62,5 +71,39 @@ describe('AddPantryItemForm', () => {
 
     renderWithQueryClient(<AddPantryItemForm />)
     expect(screen.getByRole('button')).toHaveTextContent('Adding...')
+  })
+
+  it('prevents submitting duplicate items', () => {
+    renderWithQueryClient(
+      <AddPantryItemForm existingItems={['Tomatoes', 'Garlic']} />
+    )
+
+    const input = screen.getByRole('textbox')
+    fireEvent.change(input, { target: { value: 'Tomatoes' } })
+
+    const button = screen.getByRole('button', { name: /add/i })
+    fireEvent.click(button)
+
+    expect(mockMutate).not.toHaveBeenCalled()
+    expect(screen.getByRole('alert')).toHaveTextContent('Tomatoes is already in your pantry.')
+  })
+
+  it('displays an error message if the mutation fails', () => {
+    renderWithQueryClient(<AddPantryItemForm />)
+
+    vi.mocked(useAddPantryItem).mockReturnValue({
+      mutate: (_item: string, options?: { onError?: (err: Error) => void }) => {
+        options?.onError?.(new Error('Network connection lost'))
+      },
+      isPending: false,
+    } as unknown as ReturnType<typeof useAddPantryItem>)
+
+    const input = screen.getByRole('textbox')
+    fireEvent.change(input, { target: { value: 'Onions' } })
+
+    const button = screen.getByRole('button', { name: /add/i })
+    fireEvent.click(button)
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Network connection lost')
   })
 })
